@@ -56,7 +56,7 @@ subroutine el_linelast_3dbasic(lmn, element_identifier, n_nodes, node_property_l
           
 
     ! Local Variables
-    integer      :: n_points,kint
+    integer      :: n_points,kint,i,j
 
     real (prec)  ::  strain(6), dstrain(6)             ! Strain vector contains [e11, e22, e33, 2e12, 2e13, 2e23]
     real (prec)  ::  stress(6)                         ! Stress vector contains [s11, s22, s33, s12, s13, s23]
@@ -99,13 +99,19 @@ subroutine el_linelast_3dbasic(lmn, element_identifier, n_nodes, node_property_l
     D(4,4) = d44
     D(5,5) = d44
     D(6,6) = d44
-  
+    volume=0
+    dNbardx=0.d0
     do kint = 1, n_points
         call calculate_shapefunctions(xi(1:3,kint),n_nodes,N,dNdxi)
         dxdxi = matmul(x(1:3,1:n_nodes),dNdxi(1:n_nodes,1:3))
         call invert_small(dxdxi,dxidx,determinant)
         dNdx(1:n_nodes,1:3) = matmul(dNdxi(1:n_nodes,1:3),dxidx)
-        dNbardx(1:n_nodes,1:3)=dNbardx(1:n_nodes,1:3)+dNdx(1:n_nodes,1:3)*w(kint)*determinant
+!        dNbardx(1:n_nodes,1:3)=dNbardx(1:n_nodes,1:3)+dNdx(1:n_nodes,1:3)*w(kint)*determinant
+        do i = 1, n_nodes
+           do j = 1,3
+              dNbardx(i,j)=dNbardx(i,j)+dNdx(i,j)*w(kint)*determinant
+           end do
+        end do
         volume = volume + w(kint)*determinant
     end do
 
@@ -128,15 +134,15 @@ subroutine el_linelast_3dbasic(lmn, element_identifier, n_nodes, node_property_l
         B(6,3:3*n_nodes:3)   = dNdx(1:n_nodes,2)
         end if
         if (element_identifier == 11) then
-        B(1,1:3*n_nodes-2:3) = dNdx(1:n_nodes,1)+1/3*(dNbardx(1:n_nodes,1)/volume-dNdx(1:n_nodes,1))
-        B(1,2:3*n_nodes-1:3) = 1/3*(dNbardx(1:n_nodes,2)/volume-dNdx(1:n_nodes,2))
-        B(1,3:3*n_nodes:3)   = 1/3*(dNbardx(1:n_nodes,3)/volume-dNdx(1:n_nodes,3))
-        B(2,2:3*n_nodes-1:3) = dNdx(1:n_nodes,2)+1/3*(dNbardx(1:n_nodes,2)/volume-dNdx(1:n_nodes,2))
-        B(2,3:3*n_nodes:3)   = 1/3*(dNbardx(1:n_nodes,3)/volume-dNdx(1:n_nodes,3))
-        B(2,1:3*n_nodes-2:3) = 1/3*(dNbardx(1:n_nodes,1)/volume-dNdx(1:n_nodes,1))
-        B(3,3:3*n_nodes:3)   = dNdx(1:n_nodes,3)+1/3*(dNbardx(1:n_nodes,3)/volume-dNdx(1:n_nodes,3))
-        B(3,2:3*n_nodes-1:3) = 1/3*(dNbardx(1:n_nodes,2)/volume-dNdx(1:n_nodes,2))
-        B(3,1:3*n_nodes-2:3) = 1/3*(dNbardx(1:n_nodes,1)/volume-dNdx(1:n_nodes,1))
+        B(1,1:3*n_nodes-2:3) = dNdx(1:n_nodes,1)+1.d0/3.d0*(dNbardx(1:n_nodes,1)/volume-dNdx(1:n_nodes,1))
+        B(1,2:3*n_nodes-1:3) = 1.d0/3.d0*(dNbardx(1:n_nodes,2)/volume-dNdx(1:n_nodes,2))
+        B(1,3:3*n_nodes:3)   = 1.d0/3.d0*(dNbardx(1:n_nodes,3)/volume-dNdx(1:n_nodes,3))
+        B(2,2:3*n_nodes-1:3) = dNdx(1:n_nodes,2)+1.d0/3.d0*(dNbardx(1:n_nodes,2)/volume-dNdx(1:n_nodes,2))
+        B(2,3:3*n_nodes:3)   = 1.d0/3.d0*(dNbardx(1:n_nodes,3)/volume-dNdx(1:n_nodes,3))
+        B(2,1:3*n_nodes-2:3) = 1.d0/3.d0*(dNbardx(1:n_nodes,1)/volume-dNdx(1:n_nodes,1))
+        B(3,3:3*n_nodes:3)   = dNdx(1:n_nodes,3)+1.d0/3.d0*(dNbardx(1:n_nodes,3)/volume-dNdx(1:n_nodes,3))
+        B(3,2:3*n_nodes-1:3) = 1.d0/3.d0*(dNbardx(1:n_nodes,2)/volume-dNdx(1:n_nodes,2))
+        B(3,1:3*n_nodes-2:3) = 1.d0/3.d0*(dNbardx(1:n_nodes,1)/volume-dNdx(1:n_nodes,1))
         B(4,1:3*n_nodes-2:3) = dNdx(1:n_nodes,2)
         B(4,2:3*n_nodes-1:3) = dNdx(1:n_nodes,1)
         B(5,1:3*n_nodes-2:3) = dNdx(1:n_nodes,3)
@@ -336,7 +342,7 @@ subroutine fieldvars_linelast_3dbasic(lmn, element_identifier, n_nodes, node_pro
     ! Local Variables
     logical      :: strcmp
   
-    integer      :: n_points,kint,k
+    integer      :: n_points,kint,k,i,j
 
     real (prec)  ::  strain(6), dstrain(6)             ! Strain vector contains [e11, e22, e33, 2e12, 2e13, 2e23]
     real (prec)  ::  stress(6)                         ! Stress vector contains [s11, s22, s33, s12, s13, s23]
@@ -377,12 +383,19 @@ subroutine fieldvars_linelast_3dbasic(lmn, element_identifier, n_nodes, node_pro
     D(4,4) = d44
     D(5,5) = d44
     D(6,6) = d44
+    volume=0
+    dNbardx=0.d0
     do kint = 1, n_points
         call calculate_shapefunctions(xi(1:3,kint),n_nodes,N,dNdxi)
         dxdxi = matmul(x(1:3,1:n_nodes),dNdxi(1:n_nodes,1:3))
         call invert_small(dxdxi,dxidx,determinant)
         dNdx(1:n_nodes,1:3) = matmul(dNdxi(1:n_nodes,1:3),dxidx)
-        dNbardx(1:n_nodes,1:3)=dNbardx(1:n_nodes,1:3)+dNdx(1:n_nodes,1:3)*w(kint)*determinant
+!        dNbardx(1:n_nodes,1:3)=dNbardx(1:n_nodes,1:3)+dNdx(1:n_nodes,1:3)*w(kint)*determinant
+        do i=1,n_nodes
+           do j= 1,3
+              dNbardx(i,j)=dNbardx(i,j)+dNdx(i,j)*w(kint)*determinant
+           end do
+        end do
         volume = volume + w(kint)*determinant
     end do
 
@@ -405,15 +418,15 @@ subroutine fieldvars_linelast_3dbasic(lmn, element_identifier, n_nodes, node_pro
         B(6,3:3*n_nodes:3)   = dNdx(1:n_nodes,2)
         end if
         if (element_identifier == 11) then
-        B(1,1:3*n_nodes-2:3) = dNdx(1:n_nodes,1)+1/3*(dNbardx(1:n_nodes,1)/volume-dNdx(1:n_nodes,1))
-        B(1,2:3*n_nodes-1:3) = 1/3*(dNbardx(1:n_nodes,2)/volume-dNdx(1:n_nodes,2))
-        B(1,3:3*n_nodes:3)   = 1/3*(dNbardx(1:n_nodes,3)/volume-dNdx(1:n_nodes,3))
-        B(2,2:3*n_nodes-1:3) = dNdx(1:n_nodes,2)+1/3*(dNbardx(1:n_nodes,2)/volume-dNdx(1:n_nodes,2))
-        B(2,3:3*n_nodes:3)   = 1/3*(dNbardx(1:n_nodes,3)/volume-dNdx(1:n_nodes,3))
-        B(2,1:3*n_nodes-2:3) = 1/3*(dNbardx(1:n_nodes,1)/volume-dNdx(1:n_nodes,1))
-        B(3,3:3*n_nodes:3)   = dNdx(1:n_nodes,3)+1/3*(dNbardx(1:n_nodes,3)/volume-dNdx(1:n_nodes,3))
-        B(3,2:3*n_nodes-1:3) = 1/3*(dNbardx(1:n_nodes,2)/volume-dNdx(1:n_nodes,2))
-        B(3,1:3*n_nodes-2:3) = 1/3*(dNbardx(1:n_nodes,1)/volume-dNdx(1:n_nodes,1))
+        B(1,1:3*n_nodes-2:3) = dNdx(1:n_nodes,1)+1.d0/3.d0*(dNbardx(1:n_nodes,1)/volume-dNdx(1:n_nodes,1))
+        B(1,2:3*n_nodes-1:3) = 1.d0/3.d0*(dNbardx(1:n_nodes,2)/volume-dNdx(1:n_nodes,2))
+        B(1,3:3*n_nodes:3)   = 1.d0/3.d0*(dNbardx(1:n_nodes,3)/volume-dNdx(1:n_nodes,3))
+        B(2,2:3*n_nodes-1:3) = dNdx(1:n_nodes,2)+1.d0/3.d0*(dNbardx(1:n_nodes,2)/volume-dNdx(1:n_nodes,2))
+        B(2,3:3*n_nodes:3)   = 1.d0/3.d0*(dNbardx(1:n_nodes,3)/volume-dNdx(1:n_nodes,3))
+        B(2,1:3*n_nodes-2:3) = 1.d0/3.d0*(dNbardx(1:n_nodes,1)/volume-dNdx(1:n_nodes,1))
+        B(3,3:3*n_nodes:3)   = dNdx(1:n_nodes,3)+1.d0/3.d0*(dNbardx(1:n_nodes,3)/volume-dNdx(1:n_nodes,3))
+        B(3,2:3*n_nodes-1:3) = 1.d0/3.d0*(dNbardx(1:n_nodes,2)/volume-dNdx(1:n_nodes,2))
+        B(3,1:3*n_nodes-2:3) = 1.d0/3.d0*(dNbardx(1:n_nodes,1)/volume-dNdx(1:n_nodes,1))
         B(4,1:3*n_nodes-2:3) = dNdx(1:n_nodes,2)
         B(4,2:3*n_nodes-1:3) = dNdx(1:n_nodes,1)
         B(5,1:3*n_nodes-2:3) = dNdx(1:n_nodes,3)

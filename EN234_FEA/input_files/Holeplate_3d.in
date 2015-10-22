@@ -4128,10 +4128,10 @@ END COORDINATES
 END NODES
 %
 %     The ELEMENT command defines properties of elements
-%     The parameters are no. nodes on the element, total no. state variables, integer identifier  
+%     The parameters are no. nodes on the element, total no. state variables, integer ifier  
       ELEMENTS
 
-       PARAMETERS, 8, 0, 1001
+       PARAMETERS, 8, 0, 11
 %       Define element properties - the values are passed to user subroutine elstif in the order they are listed here
 %       For the example provided, the params are Youngs Modulus, Poissons ratio 
         PROPERTIES
@@ -7348,7 +7348,7 @@ END MESH
 
 %   The CHECK STIFFNESS key tests the element subroutine to ensure that
 %   the residual force vector is consistent with the stiffness
-%       CHECK STIFFNESS, 1001
+       CHECK STIFFNESS, 11
 
 %    STOP
 
@@ -7367,7 +7367,7 @@ END MESH
           INITIAL TIME STEP, 1.d0
           MAX TIME STEP, 1.d0
           MIN TIME STEP, 0.001d0
-          MAX NUMBER OF STEPS, 1
+          MAX NUMBER OF STEPS, 15
           STOP TIME, 10.d0
           STATE PRINT STEP INTERVAL, 1
           USER PRINT STEP INTERVAL, 1
@@ -7392,7 +7392,7 @@ END MESH
 
          PRINT STATE, Output_files\contourplots.dat
 %            DEGREES OF FREEDOM
-            FIELD VARIABLES, S11,S22,S33,S12,S13,S23
+            FIELD VARIABLES, S11,S22,S33,S12,S13,S23,SMISES
             DISPLACED MESH
             DISPLACEMENT SCALE FACTOR, 1.d0
          END PRINT STATE

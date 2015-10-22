@@ -42,7 +42,7 @@
 %       Define element properties - the values are passed to user subroutine elstif in the order they are listed here
 %       For the example provided, the params are Youngs Modulus, Poissons ratio
         PROPERTIES
-         100.d0, 0.49d0
+         100.d0, 0.499d0
         END PROPERTIES
 %     Define mass density (for explicity dynamics only)
 %       DENSITY, 10.d0
@@ -159,7 +159,7 @@
           INITIAL TIME STEP, 1.d0        % Test of a comment here
           MAX TIME STEP, 1.d0
           MIN TIME STEP, 0.001d0
-          MAX NUMBER OF STEPS, 3
+          MAX NUMBER OF STEPS, 10
           STOP TIME, 10.d0
           STATE PRINT STEP INTERVAL, 1
           USER PRINT STEP INTERVAL, 1
