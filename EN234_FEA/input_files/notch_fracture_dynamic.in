@@ -7103,7 +7103,7 @@
 
           TIME STEP, 0.002
           NUMBER OF STEPS, 1200
-          STATE PRINT STEPS, 30
+          STATE PRINT STEPS, 100
           USER PRINT STEPS, 210
 
 
